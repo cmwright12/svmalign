@@ -1,0 +1,25 @@
+echo "# <name>" >> README.md
+git init
+git add README.md
+git commit -m "first commit"
+git remote add origin <http>
+git push -u origin master
+
+git push -v
+
+git add <file>
+git add *
+git commit -m "<message>"
+
+git status
+git log --oneline
+
+git branch -a
+git branch <branch>
+git checkout -b <branch>
+git checkout master
+git branch -d <branch>
+git push origin <branch>
+
+# you must be on the branch you want to merge to
+git merge <branch_name>
