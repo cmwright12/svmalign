@@ -1,5 +1,9 @@
 import random
 import numpy as np
+from Bio import pairwise2
+from Bio.pairwise2 import format_alignment
+
+# http://www.codeskulptor.org/#user41_uQt9Z1txPs_0.py
 
 alphabet = list("abcdefghijklmnopqrst")
 len_N = 20
@@ -24,14 +28,15 @@ def make_native_sequence(pool):
         native += random.choice(pool)
     return native
  
-def make_alignment_string():
+def make_alignment_string(alength=len_A):
     """Make an alignment string of length len_A"""
     align_pool = 'm'*4 + 's'*2 + 'i'*2 + 'd'*2
     align_pool_list = list(align_pool)
     alignment = ''
-    for i in range(len_A):
+    for i in range(alength):
         alignment += random.choice(align_pool_list)
-    return alignment
+    align_count = {'d': alignment.count('d'), 'i': alignment.count('i'), 'm': alignment.count('m'), 's': alignment.count('s')}
+    return alignment, align_count
 
 def make_substring(native):
     diff = len_N - len_A
@@ -48,17 +53,17 @@ def make_substring(native):
     return sublist, begin, end
     
     
-def apply_alignment(align, sub):
-
+def apply_alignment(aln, sub):
     sub = list(sub)
-    #return sub
-    
+
     index = 0
     hom = sub[:]
-    for a in align:
+    for a in aln:
         #print "Sublist: ", sub, ", a: ", a, ", Index: ", index
+        #print "Sub_len: ", len(sub)
         if a == 's':
-            hom[index] = sub[(index - 1) % 20]
+            ix = alphabet.index(sub[index])
+            hom[index] = alphabet[(ix - 1) % 20]
             index += 1
             #print 's', index
         elif a == 'm':
@@ -69,28 +74,36 @@ def apply_alignment(align, sub):
             index += 1
             #print 'i', index
         elif a == 'd':
+            #print 'd', index
             del hom[index]
     
 
     return hom
     
-def make_hom(natv, aln):
+def make_hom(natv):
     sub, begin, end = make_substring(natv)
     hom = sub[:]
     print "Sub:       ", sub
+    aln, aln_count = make_alignment_string(len(sub))
+    print "Alignment: ", aln
     hom = apply_alignment(aln, sub)
-    return begin + hom + end
+    return begin + ''.join(hom) + end
+    #return ''.join(hom)
+    
+def aligns(s1,s2):
+    print("local: match = 3, mismatch = -1, gap = -2")
+    for a in pairwise2.align.localms(s1,s2,3,-1,-2,-2):
+        print(format_alignment(*a))
 
     
 def test():
     
     native = make_native_sequence(pool)
-    alignment = make_alignment_string()
-    #hom = apply_alignment(alignment, native)
-    hom = make_hom(native, alignment)
-    
     print "Native:    ", native
-    print "Alignment: ", alignment
+
+    hom = make_hom(native)
+    
+
     print "Homolog:   ", hom
     
     # GENERATING THE HOMOLOG
@@ -98,6 +111,7 @@ def test():
     # 2 apply alignment string to randomly selected substring of the native
     # 3 pad shortened sequences with additional random characters 
     
+    aligns(native,hom)
     
 
 def make_decoy(len_D, native):
